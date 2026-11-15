@@ -1,0 +1,310 @@
+{
+  "info": {
+    "name": "Library Management System API",
+    "description": "API requests for authentication, genre CRUD, and book CRUD. Log in as a librarian before using book write operations. The login request automatically stores the JWT in the collection variable {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "genreId",
+      "value": "1"
+    },
+    {
+      "key": "bookId",
+      "value": "1"
+    },
+    {
+      "key": "librarianEmail",
+      "value": "librarian1@example.com"
+    },
+    {
+      "key": "librarianPassword",
+      "value": "LibraryPass123!"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Patron",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Patron\",\n  \"email\": \"newpatron@example.com\",\n  \"password\": \"PatronPass123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "Login as Librarian",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login successful', function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "if (data.access_token) { pm.collectionVariables.set('token', data.access_token); }",
+                  "pm.test('Access token saved', function () { pm.expect(data.access_token).to.be.a('string').and.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{librarianEmail}}\",\n  \"password\": \"{{librarianPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Genres",
+      "item": [
+        {
+          "name": "Create Genre",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"History\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/genres"
+          }
+        },
+        {
+          "name": "Get All Genres",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/genres"
+          }
+        },
+        {
+          "name": "Get Genre by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/genres/{{genreId}}"
+          }
+        },
+        {
+          "name": "Update Genre",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated History\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/genres/{{genreId}}"
+          }
+        },
+        {
+          "name": "Delete Genre",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/genres/{{genreId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "Create Book (Librarian)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Example Book\",\n  \"author\": \"Example Author\",\n  \"totalCopies\": 2,\n  \"genreId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/books"
+          }
+        },
+        {
+          "name": "Get All Books",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/books?search=&genreId=&page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "books"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "genreId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Books",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/books?search=clean&page=1&limit=10"
+          }
+        },
+        {
+          "name": "Filter Books by Genre",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/books?genreId={{genreId}}&page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Book by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/books/{{bookId}}"
+          }
+        },
+        {
+          "name": "Update Book (Librarian)",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Example Book\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/books/{{bookId}}"
+          }
+        },
+        {
+          "name": "Delete Book (Librarian)",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/books/{{bookId}}"
+          }
+        }
+      ]
+    }
+  ]
+}

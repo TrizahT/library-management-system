@@ -12,18 +12,22 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 enum Role {
   PATRON
   LIBRARIAN
 }
+
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  role      Role     @default(PATRON)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(PATRON)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
+
 model Genre {
   id        Int      @id @default(autoincrement())
   name      String   @unique
@@ -31,6 +35,7 @@ model Genre {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 model Book {
   id            Int      @id @default(autoincrement())
   title         String
@@ -38,6 +43,7 @@ model Book {
   isbn          String?  @unique
   description   String?
   publishedYear Int?
+  totalCopies   Int      @default(1)
   genreId       Int
   genre         Genre    @relation(fields: [genreId], references: [id])
   createdAt     DateTime @default(now())
